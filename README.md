@@ -1,8 +1,8 @@
 # 💰 Pinjaman Online - Platform Pinjaman Uang Digital
 
-Website pinjaman online yang modern dengan admin panel dan user dashboard. Sistem ini memungkinkan pengguna untuk mengajukan pinjaman dan admin untuk mengelola permohonan pinjaman.
+Website pinjaman online yang modern dengan admin panel dan user dashboard. **Ini adalah website STATIC yang tidak perlu npm start** - bisa dibuka langsung di browser atau di GitHub Pages!
 
-## 🎯 Fitur Utama
+## ✨ Fitur Utama
 
 ### Untuk User:
 - ✅ Login/Logout dengan sistem autentikasi
@@ -24,46 +24,55 @@ Website pinjaman online yang modern dengan admin panel dan user dashboard. Siste
 - ✅ Filter pinjaman berdasarkan status (pending, approved, rejected)
 - ✅ Statistik real-time (total pinjam, total dibayar, dll)
 
-## 📋 Data Storage
+## 🚀 Setup & Cara Menjalankan
 
-Aplikasi menggunakan **JSON files** sebagai database:
+### Opsi 1: Buka Langsung di Browser
+Cukup buka file `public/index.html` di browser - tidak perlu npm install atau npm start!
 
-```
-data/
-├── users.json       # Data pengguna dan admin
-├── loans.json       # Data pinjaman
-└── payments.json    # Data pembayaran
-```
-
-## 🚀 Instalasi & Setup
-
-### Prerequisites:
-- Node.js (v14 atau lebih tinggi)
-- npm atau yarn
-
-### Langkah Instalasi:
-
-1. **Clone atau buka repository:**
 ```bash
-cd /workspaces/tugas-kelompok
+# Ekstrak project
+cd /workspaces/tugas-kelompok/public
+
+# Buka index.html dengan browser
+# File > Open atau buka langsung dari file manager
 ```
 
-2. **Install dependencies:**
+### Opsi 2: Pakai Live Server (VS Code)
+1. Install extension **Live Server** di VS Code
+2. Right-click pada `public/index.html`
+3. Pilih "Open with Live Server"
+
+### Opsi 3: Python Simple HTTP Server
 ```bash
-npm install
+cd /workspaces/tugas-kelompok/public
+python3 -m http.server 8000
+# Buka di browser: http://localhost:8000
 ```
 
-3. **Jalankan server:**
-```bash
-npm start
+### Opsi 4: Deploy ke GitHub Pages
+1. Push ke GitHub dengan folder `public`
+2. Setting repository → Pages → Source: `/ (root)` atau `/public`
+3. Website akan live di: `https://username.github.io/tugas-kelompok`
+
+## 📋 Database Storage
+
+Aplikasi menggunakan **Static Data + localStorage** (tidak ada backend server):
+
+```
+public/
+├── db.js       # Static database dengan semua data
+├── index.html  # Halaman login
+├── user-dashboard.html    # Dashboard user
+├── admin-dashboard.html   # Dashboard admin
+├── app.js     # Utility functions
+└── style.css  # Styling
 ```
 
-4. **Akses aplikasi:**
-```
-http://localhost:3000
-```
+**Catatan:** Data disimpan di **localStorage browser** - data akan hilang jika cache dibersihkan. Untuk persistent storage, upgrade ke backend database.
 
 ## 👤 Demo Account
+
+Semua data tersimpan di `db.js` - login dengan akun berikut:
 
 ### Admin:
 - **Username:** `admin`
@@ -81,50 +90,34 @@ http://localhost:3000
 
 ```
 tugas-kelompok/
-├── src/
-│   └── server.js           # Backend Express server
-├── public/
+├── public/                  # Folder website static
 │   ├── index.html          # Halaman login
 │   ├── user-dashboard.html # Dashboard user
 │   ├── admin-dashboard.html # Dashboard admin
+│   ├── db.js              # Database statis
 │   ├── app.js             # Utility functions
-│   └── style.css          # CSS styling
-├── data/
-│   ├── users.json         # Database pengguna
-│   ├── loans.json         # Database pinjaman
-│   └── payments.json      # Database pembayaran
-├── package.json           # NPM dependencies
-└── README.md             # Dokumentasi ini
+│   └── style.css          # Styling modern & responsive
+│
+├── data/                    # (Tidak digunakan, untuk referensi)
+│   ├── users.json
+│   ├── loans.json
+│   └── payments.json
+│
+├── src/                     # (Tidak digunakan, backend lama)
+│   └── server.js
+│
+└── README.md
 ```
-
-## 🔄 API Endpoints
-
-### Authentication:
-- `POST /api/login` - Login user
-- `POST /api/logout` - Logout user
-
-### User Pinjaman:
-- `GET /api/loans/user/:userId` - Get pinjaman user
-- `POST /api/loans` - Submit pinjaman baru
-- `POST /api/payments` - Submit pembayaran
-
-### Admin Pinjaman:
-- `GET /api/admin/loans` - Get semua pinjaman
-- `PUT /api/admin/loans/:id/approve` - Approve pinjaman
-- `PUT /api/admin/loans/:id/reject` - Reject pinjaman
-- `GET /api/admin/stats` - Get statistik
-
-### Admin Pengguna:
-- `GET /api/admin/users` - Get semua pengguna
 
 ## 🎨 UI/UX Features
 
 - 🌈 **Modern Design:** Gradient colors dan smooth animations
 - 📱 **Responsive:** Bekerja sempurna di desktop, tablet, dan mobile
-- ⚡ **Fast Performance:** Optimized CSS dan minimal JavaScript
+- ⚡ **Fast Performance:** No backend needed - instant loading
 - 🎯 **User Friendly:** Navigasi intuitif dan form yang mudah digunakan
 - 📊 **Visual Stats:** Dashboard dengan card statistik yang menarik
 - 🔐 **Secure:** Session management dengan localStorage
+- 🚀 **Static Website:** Bisa di-host di GitHub Pages gratis!
 
 ## 💡 Fitur Kalkulator Pinjaman
 
@@ -134,14 +127,14 @@ Kalkulator otomatis menampilkan:
 - Total dengan bunga
 - Cicilan per bulan
 
-Contoh:
+**Contoh:**
 - Pinjam: Rp 5.000.000
 - Durasi: 12 bulan
 - Bunga: 12% per tahun
 - Total dengan bunga: Rp 5.600.000
 - Cicilan/bulan: Rp 466.667
 
-## 🔐 Keamanan
+## 🔐 Keamanan & Catatan
 
 - ✅ Password check pada login
 - ✅ Role-based access control (RBAC)
@@ -149,43 +142,52 @@ Contoh:
 - ✅ Validasi input pada semua form
 - ✅ Data separation antara user dan admin
 
+**⚠️ PENTING:**
+- Data hanya disimpan di browser (localStorage)
+- Jika user clear cache/cookies, data akan hilang
+- Untuk production, upgrade ke database SQL (MySQL/PostgreSQL)
+- Password disimpan di plain text (hanya untuk demo)
+
 ## 📱 Browser Support
 
-- Chrome/Chromium (recommended)
-- Firefox
-- Safari
-- Edge
-- Mobile browsers
+- ✅ Chrome/Chromium (recommended)
+- ✅ Firefox
+- ✅ Safari
+- ✅ Edge
+- ✅ Mobile browsers (iOS Safari, Chrome Mobile)
 
 ## 🛠️ Teknologi
 
-**Frontend:**
+**Frontend (100% Static):**
 - HTML5
-- CSS3 (with variables dan grid/flexbox)
+- CSS3 (dengan variables, grid, flexbox)
 - Vanilla JavaScript (ES6+)
-
-**Backend:**
-- Node.js
-- Express.js
-- File System (untuk JSON database)
-- CORS middleware
+- localStorage API
 
 **Database:**
-- JSON files (users.json, loans.json, payments.json)
+- JavaScript Object dalam db.js
+- Browser localStorage
 
-## 📝 Catatan Pengembangan
+**No Backend Required:** 🎉
 
-### Fitur yang Bisa Ditambahkan:
-- [ ] Integrasi dengan database SQL (MySQL/PostgreSQL)
-- [ ] Email notification untuk approval/rejection
-- [ ] Payment gateway integration
+## 📝 Update & Maintenance
+
+Untuk menambah data pengguna atau pinjaman:
+1. Edit file `public/db.js`
+2. Tambah di array `DB.users` atau `DB.loans`
+3. Save dan refresh browser
+
+## 🚀 Fitur yang Bisa Ditambahkan
+
+- [ ] Integrasi dengan Firebase untuk persistent database
+- [ ] Export data ke PDF/Excel
+- [ ] Email notification
+- [ ] Payment gateway integration (Stripe, Midtrans)
 - [ ] Two-factor authentication
-- [ ] Loan calculator dengan berbagai skenario
-- [ ] Export laporan ke PDF
-- [ ] Dashboard analytics lebih detail
-- [ ] System untuk cicilan otomatis
-- [ ] Interest calculation lebih kompleks
-- [ ] User verification/KYC process
+- [ ] Advanced analytics & charts
+- [ ] Multiple language support
+- [ ] Dark mode
+- [ ] Mobile app version
 
 ## 📄 License
 
@@ -193,10 +195,10 @@ Bebas digunakan untuk keperluan pembelajaran dan bisnis.
 
 ## 👨‍💻 Author
 
-Created for educational purposes - Platform Pinjaman Online
+Created for educational purposes - Platform Pinjaman Online (Static Version)
 
 ---
 
-**Selamat menggunakan! 🎉**
+**🎉 Selesai! Website siap digunakan tanpa backend server!**
 
-Jika ada pertanyaan atau saran, silakan hubungi administrator.
+Untuk questions atau saran, silakan create issue di GitHub.

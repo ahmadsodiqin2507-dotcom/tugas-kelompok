@@ -117,6 +117,7 @@
         </div>
     </div>
 
+    <script src="db.js"></script>
     <script src="app.js"></script>
     <script>
         let currentUser = null;
@@ -161,30 +162,19 @@
             }
         }
 
-        async function loadDashboard() {
-            try {
-                const response = await fetch('/api/admin/stats');
-                const stats = await response.json();
-
-                document.getElementById('totalUsers').textContent = stats.totalUsers;
-                document.getElementById('totalLoans').textContent = stats.totalLoans;
-                document.getElementById('approvedLoans').textContent = stats.approvedLoans;
-                document.getElementById('pendingLoans').textContent = stats.pendingLoans;
-                document.getElementById('totalAmount').textContent = formatCurrency(stats.totalAmount);
-                document.getElementById('totalPaid').textContent = formatCurrency(stats.totalPaid);
-            } catch (error) {
-                console.error('Error:', error);
-            }
+        function loadDashboard() {
+            const stats = DB.getStats();
+            document.getElementById('totalUsers').textContent = stats.totalUsers;
+            document.getElementById('totalLoans').textContent = stats.totalLoans;
+            document.getElementById('approvedLoans').textContent = stats.approvedLoans;
+            document.getElementById('pendingLoans').textContent = stats.pendingLoans;
+            document.getElementById('totalAmount').textContent = formatCurrency(stats.totalAmount);
+            document.getElementById('totalPaid').textContent = formatCurrency(stats.totalPaid);
         }
 
-        async function loadLoans() {
-            try {
-                const response = await fetch('/api/admin/loans');
-                allLoans = await response.json();
-                displayLoans();
-            } catch (error) {
-                console.error('Error:', error);
-            }
+        function loadLoans() {
+            allLoans = DB.getAllLoans();
+            displayLoans();
         }
 
         function filterLoans(status) {
@@ -235,26 +225,20 @@
             `).join('');
         }
 
-        async function loadUsers() {
-            try {
-                const response = await fetch('/api/admin/users');
-                const users = await response.json();
-
-                const tbody = document.getElementById('usersBody');
-                tbody.innerHTML = users.map((user, index) => `
-                    <tr>
-                        <td>${index + 1}</td>
-                        <td>${user.name}</td>
-                        <td>${user.email}</td>
-                        <td>${user.phone || '-'}</td>
-                        <td>${user.nik || '-'}</td>
-                        <td>${formatCurrency(user.salary || 0)}</td>
-                        <td>${user.createdAt}</td>
-                    </tr>
-                `).join('');
-            } catch (error) {
-                console.error('Error:', error);
-            }
+        function loadUsers() {
+            const users = DB.getAllUsers();
+            const tbody = document.getElementById('usersBody');
+            tbody.innerHTML = users.map((user, index) => `
+                <tr>
+                    <td>${index + 1}</td>
+                    <td>${user.name}</td>
+                    <td>${user.email}</td>
+                    <td>${user.phone || '-'}</td>
+                    <td>${user.nik || '-'}</td>
+                    <td>${formatCurrency(user.salary || 0)}</td>
+                    <td>${user.createdAt}</td>
+                </tr>
+            `).join('');
         }
 
         function showLoanDetail(loanId) {
@@ -287,55 +271,24 @@
             document.getElementById('loanDetailModal').style.display = 'none';
         }
 
-        async function approveLoan(loanId) {
+        function approveLoan(loanId) {
             if (!confirm('Setujui pinjaman ini?')) return;
-
-            try {
-                const response = await fetch(`/api/admin/loans/${loanId}/approve`, {
-                    method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ adminId: currentUser.id })
-                });
-
-                const data = await response.json();
-                if (data.success) {
-                    alert('Pinjaman berhasil disetujui');
-                    loadLoans();
-                    loadDashboard();
-                    closeModal();
-                }
-            } catch (error) {
-                console.error('Error:', error);
-            }
+            
+            DB.approveLoan(loanId, currentUser.id);
+            alert('Pinjaman berhasil disetujui');
+            loadLoans();
+            loadDashboard();
+            closeModal();
         }
 
-        async function rejectLoan(loanId) {
+        function rejectLoan(loanId) {
             if (!confirm('Tolak pinjaman ini?')) return;
-
-            try {
-                const response = await fetch(`/api/admin/loans/${loanId}/reject`, {
-                    method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' }
-                });
-
-                const data = await response.json();
-                if (data.success) {
-                    alert('Pinjaman berhasil ditolak');
-                    loadLoans();
-                    loadDashboard();
-                    closeModal();
-                }
-            } catch (error) {
-                console.error('Error:', error);
-            }
-        }
-
-        function formatCurrency(value) {
-            return new Intl.NumberFormat('id-ID', {
-                style: 'currency',
-                currency: 'IDR',
-                minimumFractionDigits: 0
-            }).format(value);
+            
+            DB.rejectLoan(loanId);
+            alert('Pinjaman berhasil ditolak');
+            loadLoans();
+            loadDashboard();
+            closeModal();
         }
 
         window.onclick = function(event) {

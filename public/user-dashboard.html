@@ -132,6 +132,7 @@
         </div>
     </div>
 
+    <script src="db.js"></script>
     <script src="app.js"></script>
     <script>
         let currentUser = null;
@@ -167,48 +168,41 @@
             }
         }
 
-        async function loadUserData() {
-            try {
-                // Load profile
-                document.getElementById('profileName').textContent = currentUser.name;
-                document.getElementById('profileEmail').textContent = currentUser.email;
-                document.getElementById('profileUsername').textContent = currentUser.username;
-                document.getElementById('profilePhone').textContent = currentUser.phone || '-';
-                document.getElementById('profileAddress').textContent = currentUser.address || '-';
-                document.getElementById('profileNIK').textContent = currentUser.nik || '-';
-                document.getElementById('profileSalary').textContent = formatCurrency(currentUser.salary || 0);
-                document.getElementById('profileJoinDate').textContent = currentUser.createdAt || '-';
+        function loadUserData() {
+            // Load profile
+            document.getElementById('profileName').textContent = currentUser.name;
+            document.getElementById('profileEmail').textContent = currentUser.email;
+            document.getElementById('profileUsername').textContent = currentUser.username;
+            document.getElementById('profilePhone').textContent = currentUser.phone || '-';
+            document.getElementById('profileAddress').textContent = currentUser.address || '-';
+            document.getElementById('profileNIK').textContent = currentUser.nik || '-';
+            document.getElementById('profileSalary').textContent = formatCurrency(currentUser.salary || 0);
+            document.getElementById('profileJoinDate').textContent = currentUser.createdAt || '-';
 
-                // Load loans
-                const response = await fetch(`/api/loans/user/${currentUser.id}`);
-                const loans = await response.json();
+            // Load loans
+            const loans = DB.getUserLoans(currentUser.id);
 
-                // Update dashboard
-                const approved = loans.filter(l => l.status === 'approved').length;
-                const pending = loans.filter(l => l.status === 'pending').length;
-                const total = loans.reduce((sum, l) => sum + l.amount, 0);
+            // Update dashboard
+            const approved = loans.filter(l => l.status === 'approved').length;
+            const pending = loans.filter(l => l.status === 'pending').length;
+            const total = loans.reduce((sum, l) => sum + l.amount, 0);
 
-                document.getElementById('totalLoans').textContent = loans.length;
-                document.getElementById('approvedLoans').textContent = approved;
-                document.getElementById('pendingLoans').textContent = pending;
-                document.getElementById('totalAmount').textContent = formatCurrency(total);
-            } catch (error) {
-                console.error('Error:', error);
-            }
+            document.getElementById('totalLoans').textContent = loans.length;
+            document.getElementById('approvedLoans').textContent = approved;
+            document.getElementById('pendingLoans').textContent = pending;
+            document.getElementById('totalAmount').textContent = formatCurrency(total);
         }
 
-        async function loadUserLoans() {
-            try {
-                const response = await fetch(`/api/loans/user/${currentUser.id}`);
-                const loans = await response.json();
+        function loadUserLoans() {
+            const loans = DB.getUserLoans(currentUser.id);
 
-                const loansList = document.getElementById('loansList');
-                if (loans.length === 0) {
-                    loansList.innerHTML = '<p class="empty-message">Anda belum memiliki pinjaman</p>';
-                    return;
-                }
+            const loansList = document.getElementById('loansList');
+            if (loans.length === 0) {
+                loansList.innerHTML = '<p class="empty-message">Anda belum memiliki pinjaman</p>';
+                return;
+            }
 
-                loansList.innerHTML = loans.map(loan => `
+            loansList.innerHTML = loans.map(loan => `
                     <div class="loan-card">
                         <div class="loan-header">
                             <h3>${loan.purpose}</h3>
@@ -234,44 +228,26 @@
                         </div>
                     </div>
                 `).join('');
-            } catch (error) {
-                console.error('Error:', error);
-            }
         }
 
-        document.getElementById('loanForm').addEventListener('submit', async (e) => {
+        document.getElementById('loanForm').addEventListener('submit', (e) => {
             e.preventDefault();
 
             const amount = parseInt(document.getElementById('amount').value);
             const duration = parseInt(document.getElementById('duration').value);
             const purpose = document.getElementById('purpose').value;
 
-            try {
-                const response = await fetch('/api/loans', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        userId: currentUser.id,
-                        amount,
-                        duration,
-                        purpose
-                    })
-                });
+            const loan = DB.submitLoan(currentUser.id, amount, duration, purpose);
 
-                const data = await response.json();
+            if (loan) {
+                document.getElementById('successMessage').textContent = 'Pinjaman berhasil diajukan! Status pinjaman dapat Anda lihat di menu Riwayat Pinjaman.';
+                document.getElementById('successMessage').style.display = 'block';
+                document.getElementById('loanForm').reset();
+                loadUserData();
 
-                if (data.success) {
-                    document.getElementById('successMessage').textContent = 'Pinjaman berhasil diajukan! Status pinjaman dapat Anda lihat di menu Riwayat Pinjaman.';
-                    document.getElementById('successMessage').style.display = 'block';
-                    document.getElementById('loanForm').reset();
-                    loadUserData();
-
-                    setTimeout(() => {
-                        document.getElementById('successMessage').style.display = 'none';
-                    }, 5000);
-                }
-            } catch (error) {
-                console.error('Error:', error);
+                setTimeout(() => {
+                    document.getElementById('successMessage').style.display = 'none';
+                }, 5000);
             }
         });
 
@@ -292,14 +268,6 @@
                 document.getElementById('totalWithInterest').textContent = formatCurrency(Math.round(totalWithInterest));
                 document.getElementById('monthlyPayment').textContent = formatCurrency(Math.round(monthlyPayment));
             }
-        }
-
-        function formatCurrency(value) {
-            return new Intl.NumberFormat('id-ID', {
-                style: 'currency',
-                currency: 'IDR',
-                minimumFractionDigits: 0
-            }).format(value);
         }
 
         init();
