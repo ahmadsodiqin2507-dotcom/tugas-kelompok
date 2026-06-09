@@ -2,6 +2,17 @@
 
 Website ini adalah **STATIC WEBSITE** - tidak perlu npm start! Bisa langsung dibuka di browser.
 
+## 🔗 Link Untuk Melihat Hasilnya Langsung
+
+### Demo Online (GitHub Pages):
+- 🌐 **[Buka Website di GitHub Pages](https://ahmadsodiqin2507-dotcom.github.io/tugas-kelompok/)**
+
+### Local Server (Pilih Salah Satu):
+- 🖥️ **[http://localhost:8000](http://localhost:8000)** - Jika pakai Python Server (Opsi 3)
+- 🖥️ **[http://localhost:5500](http://localhost:5500)** - Jika pakai Live Server (Opsi 2)
+
+---
+
 ## ✅ Opsi 1: Buka File HTML Langsung (Termudah)
 
 1. Buka folder `/public/` di file manager
