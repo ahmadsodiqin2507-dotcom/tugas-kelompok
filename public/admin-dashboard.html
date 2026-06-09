@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Admin - Pinjaman Online</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="main-container">
+        <nav class="navbar">
+            <div class="nav-container">
+                <div class="nav-brand">💰 Pinjaman Online - Admin</div>
+                <div class="nav-user">
+                    <span id="userName">Loading...</span>
+                    <button class="btn btn-logout" onclick="logout()">Logout</button>
+                </div>
+            </div>
+        </nav>
+
+        <div class="container">
+            <aside class="sidebar">
+                <ul class="sidebar-menu">
+                    <li><a href="#dashboard" class="menu-link active" onclick="showSection('dashboard')">📊 Dashboard</a></li>
+                    <li><a href="#loans" class="menu-link" onclick="showSection('loans')">📋 Kelola Pinjaman</a></li>
+                    <li><a href="#users" class="menu-link" onclick="showSection('users')">👥 Kelola Pengguna</a></li>
+                </ul>
+            </aside>
+
+            <main class="content">
+                <!-- Dashboard Section -->
+                <section id="dashboard" class="section active">
+                    <h2>Dashboard Admin</h2>
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-icon">👥</div>
+                            <h3>Total Pengguna</h3>
+                            <p id="totalUsers" class="stat-value">0</p>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">📋</div>
+                            <h3>Total Pinjaman</h3>
+                            <p id="totalLoans" class="stat-value">0</p>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">✅</div>
+                            <h3>Disetujui</h3>
+                            <p id="approvedLoans" class="stat-value">0</p>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">⏳</div>
+                            <h3>Menunggu</h3>
+                            <p id="pendingLoans" class="stat-value">0</p>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">💵</div>
+                            <h3>Total Pinjam</h3>
+                            <p id="totalAmount" class="stat-value">Rp 0</p>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">✓</div>
+                            <h3>Total Dibayar</h3>
+                            <p id="totalPaid" class="stat-value">Rp 0</p>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Kelola Pinjaman Section -->
+                <section id="loans" class="section">
+                    <h2>Kelola Pinjaman</h2>
+                    <div class="filter-tabs">
+                        <button class="filter-btn active" onclick="filterLoans('all')">Semua</button>
+                        <button class="filter-btn" onclick="filterLoans('pending')">Pending</button>
+                        <button class="filter-btn" onclick="filterLoans('approved')">Disetujui</button>
+                        <button class="filter-btn" onclick="filterLoans('rejected')">Ditolak</button>
+                    </div>
+                    <div id="loansList" class="loans-list">
+                        <p class="loading">Loading...</p>
+                    </div>
+                </section>
+
+                <!-- Kelola Pengguna Section -->
+                <section id="users" class="section">
+                    <h2>Kelola Pengguna</h2>
+                    <div class="users-table-container">
+                        <table class="users-table" id="usersTable">
+                            <thead>
+                                <tr>
+                                    <th>No</th>
+                                    <th>Nama</th>
+                                    <th>Email</th>
+                                    <th>Telepon</th>
+                                    <th>NIK</th>
+                                    <th>Gaji</th>
+                                    <th>Bergabung</th>
+                                </tr>
+                            </thead>
+                            <tbody id="usersBody">
+                                <tr><td colspan="7" class="loading">Loading...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+            </main>
+        </div>
+    </div>
+
+    <div id="loanDetailModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Detail Pinjaman</h3>
+                <button class="close-btn" onclick="closeModal()">&times;</button>
+            </div>
+            <div class="modal-body" id="modalBody">
+                <!-- Loan details will be loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+    <script>
+        let currentUser = null;
+        let allLoans = [];
+        let filterStatus = 'all';
+
+        function init() {
+            const userStr = localStorage.getItem('currentUser');
+            if (!userStr) {
+                window.location.href = 'index.html';
+                return;
+            }
+
+            currentUser = JSON.parse(userStr);
+            if (currentUser.role !== 'admin') {
+                window.location.href = 'user-dashboard.html';
+                return;
+            }
+
+            document.getElementById('userName').textContent = currentUser.name;
+            loadDashboard();
+        }
+
+        function logout() {
+            if (confirm('Apakah Anda yakin ingin logout?')) {
+                localStorage.removeItem('currentUser');
+                window.location.href = 'index.html';
+            }
+        }
+
+        function showSection(sectionId) {
+            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+            document.getElementById(sectionId).classList.add('active');
+
+            document.querySelectorAll('.menu-link').forEach(link => link.classList.remove('active'));
+            event.target.classList.add('active');
+
+            if (sectionId === 'loans') {
+                loadLoans();
+            } else if (sectionId === 'users') {
+                loadUsers();
+            }
+        }
+
+        async function loadDashboard() {
+            try {
+                const response = await fetch('/api/admin/stats');
+                const stats = await response.json();
+
+                document.getElementById('totalUsers').textContent = stats.totalUsers;
+                document.getElementById('totalLoans').textContent = stats.totalLoans;
+                document.getElementById('approvedLoans').textContent = stats.approvedLoans;
+                document.getElementById('pendingLoans').textContent = stats.pendingLoans;
+                document.getElementById('totalAmount').textContent = formatCurrency(stats.totalAmount);
+                document.getElementById('totalPaid').textContent = formatCurrency(stats.totalPaid);
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+
+        async function loadLoans() {
+            try {
+                const response = await fetch('/api/admin/loans');
+                allLoans = await response.json();
+                displayLoans();
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+
+        function filterLoans(status) {
+            filterStatus = status;
+            document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            displayLoans();
+        }
+
+        function displayLoans() {
+            const filtered = filterStatus === 'all' 
+                ? allLoans 
+                : allLoans.filter(l => l.status === filterStatus);
+
+            const loansList = document.getElementById('loansList');
+
+            if (filtered.length === 0) {
+                loansList.innerHTML = '<p class="empty-message">Tidak ada pinjaman</p>';
+                return;
+            }
+
+            loansList.innerHTML = filtered.map(loan => `
+                <div class="loan-card">
+                    <div class="loan-header">
+                        <div>
+                            <h3>${loan.purpose}</h3>
+                            <p class="loan-user">${loan.userName}</p>
+                        </div>
+                        <span class="status status-${loan.status}">${loan.status}</span>
+                    </div>
+                    <div class="loan-details">
+                        <p><strong>Jumlah:</strong> ${formatCurrency(loan.amount)}</p>
+                        <p><strong>Durasi:</strong> ${loan.duration} bulan</p>
+                        <p><strong>Bunga:</strong> ${loan.interestRate}%</p>
+                        <p><strong>Total dengan Bunga:</strong> ${formatCurrency(loan.totalWithInterest)}</p>
+                        <p><strong>Cicilan/Bulan:</strong> ${formatCurrency(loan.monthlyPayment)}</p>
+                        <p><strong>Sudah Dibayar:</strong> ${formatCurrency(loan.totalPaid)}</p>
+                        <p><strong>Tanggal Pengajuan:</strong> ${loan.createdAt}</p>
+                    </div>
+                    <div class="loan-actions">
+                        <button class="btn btn-sm btn-info" onclick="showLoanDetail(${loan.id})">Detail</button>
+                        ${loan.status === 'pending' ? `
+                            <button class="btn btn-sm btn-success" onclick="approveLoan(${loan.id})">Setujui</button>
+                            <button class="btn btn-sm btn-danger" onclick="rejectLoan(${loan.id})">Tolak</button>
+                        ` : ''}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        async function loadUsers() {
+            try {
+                const response = await fetch('/api/admin/users');
+                const users = await response.json();
+
+                const tbody = document.getElementById('usersBody');
+                tbody.innerHTML = users.map((user, index) => `
+                    <tr>
+                        <td>${index + 1}</td>
+                        <td>${user.name}</td>
+                        <td>${user.email}</td>
+                        <td>${user.phone || '-'}</td>
+                        <td>${user.nik || '-'}</td>
+                        <td>${formatCurrency(user.salary || 0)}</td>
+                        <td>${user.createdAt}</td>
+                    </tr>
+                `).join('');
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+
+        function showLoanDetail(loanId) {
+            const loan = allLoans.find(l => l.id === loanId);
+            if (!loan) return;
+
+            const modalBody = document.getElementById('modalBody');
+            modalBody.innerHTML = `
+                <div class="detail-grid">
+                    <p><strong>ID:</strong> ${loan.id}</p>
+                    <p><strong>Peminjam:</strong> ${loan.userName}</p>
+                    <p><strong>Email:</strong> ${loan.userEmail}</p>
+                    <p><strong>Jumlah Pinjaman:</strong> ${formatCurrency(loan.amount)}</p>
+                    <p><strong>Durasi:</strong> ${loan.duration} bulan</p>
+                    <p><strong>Bunga:</strong> ${loan.interestRate}%</p>
+                    <p><strong>Total dengan Bunga:</strong> ${formatCurrency(loan.totalWithInterest)}</p>
+                    <p><strong>Cicilan per Bulan:</strong> ${formatCurrency(loan.monthlyPayment)}</p>
+                    <p><strong>Status:</strong> <span class="status status-${loan.status}">${loan.status}</span></p>
+                    <p><strong>Tujuan:</strong> ${loan.purpose}</p>
+                    <p><strong>Tanggal Pengajuan:</strong> ${loan.createdAt}</p>
+                    <p><strong>Total Dibayar:</strong> ${formatCurrency(loan.totalPaid)}</p>
+                    <p><strong>Pembayaran:</strong> ${loan.paymentCount} kali</p>
+                </div>
+            `;
+
+            document.getElementById('loanDetailModal').style.display = 'block';
+        }
+
+        function closeModal() {
+            document.getElementById('loanDetailModal').style.display = 'none';
+        }
+
+        async function approveLoan(loanId) {
+            if (!confirm('Setujui pinjaman ini?')) return;
+
+            try {
+                const response = await fetch(`/api/admin/loans/${loanId}/approve`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ adminId: currentUser.id })
+                });
+
+                const data = await response.json();
+                if (data.success) {
+                    alert('Pinjaman berhasil disetujui');
+                    loadLoans();
+                    loadDashboard();
+                    closeModal();
+                }
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+
+        async function rejectLoan(loanId) {
+            if (!confirm('Tolak pinjaman ini?')) return;
+
+            try {
+                const response = await fetch(`/api/admin/loans/${loanId}/reject`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+
+                const data = await response.json();
+                if (data.success) {
+                    alert('Pinjaman berhasil ditolak');
+                    loadLoans();
+                    loadDashboard();
+                    closeModal();
+                }
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+
+        function formatCurrency(value) {
+            return new Intl.NumberFormat('id-ID', {
+                style: 'currency',
+                currency: 'IDR',
+                minimumFractionDigits: 0
+            }).format(value);
+        }
+
+        window.onclick = function(event) {
+            const modal = document.getElementById('loanDetailModal');
+            if (event.target === modal) {
+                modal.style.display = 'none';
+            }
+        }
+
+        init();
+    </script>
+</body>
+</html>

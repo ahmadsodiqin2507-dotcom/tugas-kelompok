@@ -1,0 +1,26 @@
+[
+  {
+    "id": 1,
+    "userId": 2,
+    "amount": 5000000,
+    "duration": 12,
+    "interestRate": 12,
+    "status": "approved",
+    "purpose": "Modal usaha",
+    "createdAt": "2024-01-15",
+    "approvedAt": "2024-01-16",
+    "approvedBy": 1
+  },
+  {
+    "id": 2,
+    "userId": 3,
+    "amount": 10000000,
+    "duration": 24,
+    "interestRate": 15,
+    "status": "pending",
+    "purpose": "Pembelian kendaraan",
+    "createdAt": "2024-01-18",
+    "approvedAt": null,
+    "approvedBy": null
+  }
+]

@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard User - Pinjaman Online</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="main-container">
+        <nav class="navbar">
+            <div class="nav-container">
+                <div class="nav-brand">💰 Pinjaman Online</div>
+                <div class="nav-user">
+                    <span id="userName">Loading...</span>
+                    <button class="btn btn-logout" onclick="logout()">Logout</button>
+                </div>
+            </div>
+        </nav>
+
+        <div class="container">
+            <aside class="sidebar">
+                <ul class="sidebar-menu">
+                    <li><a href="#dashboard" class="menu-link active" onclick="showSection('dashboard')">📊 Dashboard</a></li>
+                    <li><a href="#pinjaman" class="menu-link" onclick="showSection('pinjaman')">📋 Riwayat Pinjaman</a></li>
+                    <li><a href="#ajukan" class="menu-link" onclick="showSection('ajukan')">➕ Ajukan Pinjaman Baru</a></li>
+                    <li><a href="#profile" class="menu-link" onclick="showSection('profile')">👤 Profil</a></li>
+                </ul>
+            </aside>
+
+            <main class="content">
+                <!-- Dashboard Section -->
+                <section id="dashboard" class="section active">
+                    <h2>Dashboard</h2>
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-icon">📊</div>
+                            <h3>Total Pinjaman</h3>
+                            <p id="totalLoans" class="stat-value">0</p>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">✅</div>
+                            <h3>Pinjaman Disetujui</h3>
+                            <p id="approvedLoans" class="stat-value">0</p>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">⏳</div>
+                            <h3>Pending</h3>
+                            <p id="pendingLoans" class="stat-value">0</p>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">💵</div>
+                            <h3>Total Pinjam</h3>
+                            <p id="totalAmount" class="stat-value">Rp 0</p>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Pinjaman Section -->
+                <section id="pinjaman" class="section">
+                    <h2>Riwayat Pinjaman</h2>
+                    <div id="loansList" class="loans-list">
+                        <p class="loading">Loading...</p>
+                    </div>
+                </section>
+
+                <!-- Ajukan Pinjaman Section -->
+                <section id="ajukan" class="section">
+                    <h2>Ajukan Pinjaman Baru</h2>
+                    <div class="form-card">
+                        <form id="loanForm" class="form">
+                            <div class="form-group">
+                                <label for="amount">Jumlah Pinjaman (Rp)</label>
+                                <input type="number" id="amount" name="amount" min="1000000" step="100000" required placeholder="Contoh: 5000000">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="duration">Durasi Pinjaman (Bulan)</label>
+                                <select id="duration" name="duration" required>
+                                    <option value="">Pilih durasi</option>
+                                    <option value="6">6 Bulan</option>
+                                    <option value="12">12 Bulan</option>
+                                    <option value="24">24 Bulan</option>
+                                    <option value="36">36 Bulan</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="purpose">Tujuan Pinjaman</label>
+                                <select id="purpose" name="purpose" required>
+                                    <option value="">Pilih tujuan</option>
+                                    <option value="Modal usaha">Modal Usaha</option>
+                                    <option value="Pembelian kendaraan">Pembelian Kendaraan</option>
+                                    <option value="Renovasi rumah">Renovasi Rumah</option>
+                                    <option value="Pendidikan">Pendidikan</option>
+                                    <option value="Kesehatan">Kesehatan</option>
+                                    <option value="Lainnya">Lainnya</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <div class="calculation-box">
+                                    <p><strong>Bunga Tahunan:</strong> <span id="interestDisplay">12%</span></p>
+                                    <p><strong>Total dengan Bunga:</strong> <span id="totalWithInterest">Rp 0</span></p>
+                                    <p><strong>Cicilan per Bulan:</strong> <span id="monthlyPayment">Rp 0</span></p>
+                                </div>
+                            </div>
+
+                            <button type="submit" class="btn btn-primary btn-full">Ajukan Pinjaman</button>
+                        </form>
+                        <div id="successMessage" class="alert alert-success" style="display: none;"></div>
+                    </div>
+                </section>
+
+                <!-- Profile Section -->
+                <section id="profile" class="section">
+                    <h2>Profil Saya</h2>
+                    <div class="form-card">
+                        <div class="profile-info">
+                            <p><strong>Nama:</strong> <span id="profileName">-</span></p>
+                            <p><strong>Email:</strong> <span id="profileEmail">-</span></p>
+                            <p><strong>Username:</strong> <span id="profileUsername">-</span></p>
+                            <p><strong>Telepon:</strong> <span id="profilePhone">-</span></p>
+                            <p><strong>Alamat:</strong> <span id="profileAddress">-</span></p>
+                            <p><strong>NIK:</strong> <span id="profileNIK">-</span></p>
+                            <p><strong>Gaji Bulanan:</strong> <span id="profileSalary">-</span></p>
+                            <p><strong>Sejak:</strong> <span id="profileJoinDate">-</span></p>
+                        </div>
+                    </div>
+                </section>
+            </main>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+    <script>
+        let currentUser = null;
+
+        function init() {
+            const userStr = localStorage.getItem('currentUser');
+            if (!userStr) {
+                window.location.href = 'index.html';
+                return;
+            }
+
+            currentUser = JSON.parse(userStr);
+            document.getElementById('userName').textContent = currentUser.name;
+            loadUserData();
+        }
+
+        function logout() {
+            if (confirm('Apakah Anda yakin ingin logout?')) {
+                localStorage.removeItem('currentUser');
+                window.location.href = 'index.html';
+            }
+        }
+
+        function showSection(sectionId) {
+            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+            document.getElementById(sectionId).classList.add('active');
+
+            document.querySelectorAll('.menu-link').forEach(link => link.classList.remove('active'));
+            event.target.classList.add('active');
+
+            if (sectionId === 'pinjaman') {
+                loadUserLoans();
+            }
+        }
+
+        async function loadUserData() {
+            try {
+                // Load profile
+                document.getElementById('profileName').textContent = currentUser.name;
+                document.getElementById('profileEmail').textContent = currentUser.email;
+                document.getElementById('profileUsername').textContent = currentUser.username;
+                document.getElementById('profilePhone').textContent = currentUser.phone || '-';
+                document.getElementById('profileAddress').textContent = currentUser.address || '-';
+                document.getElementById('profileNIK').textContent = currentUser.nik || '-';
+                document.getElementById('profileSalary').textContent = formatCurrency(currentUser.salary || 0);
+                document.getElementById('profileJoinDate').textContent = currentUser.createdAt || '-';
+
+                // Load loans
+                const response = await fetch(`/api/loans/user/${currentUser.id}`);
+                const loans = await response.json();
+
+                // Update dashboard
+                const approved = loans.filter(l => l.status === 'approved').length;
+                const pending = loans.filter(l => l.status === 'pending').length;
+                const total = loans.reduce((sum, l) => sum + l.amount, 0);
+
+                document.getElementById('totalLoans').textContent = loans.length;
+                document.getElementById('approvedLoans').textContent = approved;
+                document.getElementById('pendingLoans').textContent = pending;
+                document.getElementById('totalAmount').textContent = formatCurrency(total);
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+
+        async function loadUserLoans() {
+            try {
+                const response = await fetch(`/api/loans/user/${currentUser.id}`);
+                const loans = await response.json();
+
+                const loansList = document.getElementById('loansList');
+                if (loans.length === 0) {
+                    loansList.innerHTML = '<p class="empty-message">Anda belum memiliki pinjaman</p>';
+                    return;
+                }
+
+                loansList.innerHTML = loans.map(loan => `
+                    <div class="loan-card">
+                        <div class="loan-header">
+                            <h3>${loan.purpose}</h3>
+                            <span class="status status-${loan.status}">${loan.status}</span>
+                        </div>
+                        <div class="loan-details">
+                            <p><strong>Jumlah Pinjaman:</strong> ${formatCurrency(loan.amount)}</p>
+                            <p><strong>Durasi:</strong> ${loan.duration} bulan</p>
+                            <p><strong>Bunga:</strong> ${loan.interestRate}% per tahun</p>
+                            <p><strong>Total dengan Bunga:</strong> ${formatCurrency(loan.totalWithInterest)}</p>
+                            <p><strong>Cicilan per Bulan:</strong> ${formatCurrency(loan.monthlyPayment)}</p>
+                            <p><strong>Sudah Dibayar:</strong> ${formatCurrency(loan.totalPaid)}</p>
+                            <p><strong>Tanggal Pengajuan:</strong> ${loan.createdAt}</p>
+                        </div>
+                        <div class="loan-payments">
+                            <h4>Riwayat Pembayaran (${loan.payments.length})</h4>
+                            ${loan.payments.length === 0 ? 
+                                '<p class="empty-message">Belum ada pembayaran</p>' :
+                                `<ul>${loan.payments.map(p => `
+                                    <li>${p.paidDate}: ${formatCurrency(p.amount)} ✓</li>
+                                `).join('')}</ul>`
+                            }
+                        </div>
+                    </div>
+                `).join('');
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+
+        document.getElementById('loanForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const amount = parseInt(document.getElementById('amount').value);
+            const duration = parseInt(document.getElementById('duration').value);
+            const purpose = document.getElementById('purpose').value;
+
+            try {
+                const response = await fetch('/api/loans', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        userId: currentUser.id,
+                        amount,
+                        duration,
+                        purpose
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    document.getElementById('successMessage').textContent = 'Pinjaman berhasil diajukan! Status pinjaman dapat Anda lihat di menu Riwayat Pinjaman.';
+                    document.getElementById('successMessage').style.display = 'block';
+                    document.getElementById('loanForm').reset();
+                    loadUserData();
+
+                    setTimeout(() => {
+                        document.getElementById('successMessage').style.display = 'none';
+                    }, 5000);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        });
+
+        // Calculate interest when amount or duration changes
+        document.getElementById('amount').addEventListener('change', calculatePayment);
+        document.getElementById('duration').addEventListener('change', calculatePayment);
+
+        function calculatePayment() {
+            const amount = parseInt(document.getElementById('amount').value) || 0;
+            const duration = parseInt(document.getElementById('duration').value) || 0;
+
+            if (amount > 0 && duration > 0) {
+                const interestRate = duration > 12 ? 15 : 12;
+                const totalWithInterest = amount + (amount * interestRate / 100);
+                const monthlyPayment = totalWithInterest / duration;
+
+                document.getElementById('interestDisplay').textContent = interestRate + '%';
+                document.getElementById('totalWithInterest').textContent = formatCurrency(Math.round(totalWithInterest));
+                document.getElementById('monthlyPayment').textContent = formatCurrency(Math.round(monthlyPayment));
+            }
+        }
+
+        function formatCurrency(value) {
+            return new Intl.NumberFormat('id-ID', {
+                style: 'currency',
+                currency: 'IDR',
+                minimumFractionDigits: 0
+            }).format(value);
+        }
+
+        init();
+    </script>
+</body>
+</html>

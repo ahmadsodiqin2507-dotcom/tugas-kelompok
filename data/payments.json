@@ -1,0 +1,11 @@
+[
+  {
+    "id": 1,
+    "loanId": 1,
+    "amount": 450000,
+    "status": "completed",
+    "dueDate": "2024-02-15",
+    "paidDate": "2024-02-14",
+    "createdAt": "2024-01-16"
+  }
+]

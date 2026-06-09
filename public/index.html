@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Pinjaman Online</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="login-page">
+    <div class="login-container">
+        <div class="login-box">
+            <div class="login-header">
+                <h1>💰 Pinjaman Online</h1>
+                <p>Platform Pinjaman Uang Cepat dan Aman</p>
+            </div>
+
+            <form id="loginForm" class="login-form">
+                <div class="form-group">
+                    <label for="username">Username</label>
+                    <input type="text" id="username" name="username" required placeholder="Masukkan username">
+                </div>
+
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" name="password" required placeholder="Masukkan password">
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-full">Login</button>
+            </form>
+
+            <div class="demo-section">
+                <h4>Demo Account:</h4>
+                <div class="demo-account">
+                    <p><strong>Admin:</strong></p>
+                    <p>Username: <code>admin</code></p>
+                    <p>Password: <code>admin123</code></p>
+                </div>
+                <div class="demo-account">
+                    <p><strong>User 1:</strong></p>
+                    <p>Username: <code>john</code></p>
+                    <p>Password: <code>john123</code></p>
+                </div>
+                <div class="demo-account">
+                    <p><strong>User 2:</strong></p>
+                    <p>Username: <code>jane</code></p>
+                    <p>Password: <code>jane123</code></p>
+                </div>
+            </div>
+
+            <div id="errorMessage" class="alert alert-danger" style="display: none;"></div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+    <script>
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const errorMsg = document.getElementById('errorMessage');
+            
+            try {
+                const response = await fetch('/api/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    localStorage.setItem('currentUser', JSON.stringify(data.user));
+                    
+                    if (data.user.role === 'admin') {
+                        window.location.href = 'admin-dashboard.html';
+                    } else {
+                        window.location.href = 'user-dashboard.html';
+                    }
+                } else {
+                    errorMsg.textContent = data.message;
+                    errorMsg.style.display = 'block';
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                errorMsg.textContent = 'Terjadi kesalahan. Silakan coba lagi.';
+                errorMsg.style.display = 'block';
+            }
+        });
+    </script>
+</body>
+</html>
